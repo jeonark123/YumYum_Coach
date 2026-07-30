@@ -24,6 +24,9 @@ public interface DietManager {
 	
 	public abstract boolean updateDiet(User user, Date dietDate, Diet newDiet);
 	
+	
+	boolean deleteDiet(User user, Date targetDate);
+	
 	// 저장
 	public abstract void saveData();
 	
