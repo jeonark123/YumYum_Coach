@@ -1,5 +1,11 @@
 package repository;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import domain.User;
@@ -7,10 +13,12 @@ import domain.User;
 public class UserRepository {
     // 메모리 상에서 회원 데이터를 관리할 리스트
     private List<User> userList = new ArrayList<>();
+    // 저장할 파일 경로 및 파일명 지정
+    private final String FILE_PATH = "users.txt";
 
-    // 생성자 (나중에 여기서 loadFromFile()을 호출해 시작하자마자 파일을 읽어오게 할 거야)
+    // 생성자 (프로그램 시작 시 자동으로 파일에서 데이터 불러오기)
     public UserRepository() {
-        // loadFromFile(); // File I/O 붙일 때 주석 해제!
+        loadFromFile();
     }
 
     /**
@@ -25,7 +33,7 @@ public class UserRepository {
             return false;
         }
         userList.add(user);
-        // saveToFile(); // 데이터 변경 시 파일에 즉시 저장 (나중에 해제)
+        saveToFile(); // // 데이터 변경 시 파일에 즉시 저장
         return true;
     }
 
@@ -56,7 +64,7 @@ public class UserRepository {
             existingUser.setHeight(updatedUser.getHeight());
             existingUser.setWeight(updatedUser.getWeight());
             existingUser.setDisease(updatedUser.getDisease());
-            // saveToFile(); // 변경사항 파일 저장
+            saveToFile(); // // 변경사항 파일 저장
             return true;
         }
         return false;
@@ -71,7 +79,7 @@ public class UserRepository {
         User user = selectById(id);
         if (user != null) {
             user.setActive(false); // 비활성화 처리
-            // saveToFile(); // 변경사항 파일 저장
+            saveToFile(); // // 변경사항 파일 저장
             return true;
         }
         return false;
@@ -84,14 +92,36 @@ public class UserRepository {
         return userList;
     }
 
-    // ==========================================
-    // [Util-JSON 연동용 뼈대] 추후 GSON/Jackson 붙일 영역
-    // ==========================================
+    // [Util-File I/O] 텍스트 파일 기반 영구 저장 및 불러오기
     public void loadFromFile() {
-        // TODO: JsonUtil이나 FileUtil을 이용해 "data/users.json"에서 List<User> 복원하기
+        File file = new File(FILE_PATH);
+        if (!file.exists()) {
+            // // 저장된 파일이 없으면 새로 읽을 필요 없이 종료
+            return;
+        }
+
+        try (BufferedReader br = new BufferedReader(new FileReader(file))) {
+            String line;
+            while ((line = br.readLine()) != null) {
+                User user = User.fromFileString(line);
+                if (user != null) {
+                    userList.add(user);
+                }
+            }
+            System.out.println("[안내] 기존 회원 데이터를 파일에서 성공적으로 불러왔습니다.");
+        } catch (IOException e) {
+            System.out.println("[오류] 파일 불러오기 실패 : " + e.getMessage());
+        }
     }
 
     public void saveToFile() {
-        // TODO: JsonUtil이나 FileUtil을 이용해 userList를 "data/users.json"에 저장하기
+        try (BufferedWriter bw = new BufferedWriter(new FileWriter(FILE_PATH))) {
+            for (User user : userList) {
+                bw.write(user.toFileString());
+                bw.newLine(); // // 다음 회원을 위해 줄바꿈
+            }
+        } catch (IOException e) {
+            System.out.println("[오류] 파일 저장 실패 : " + e.getMessage());
+        }
     }
 }
