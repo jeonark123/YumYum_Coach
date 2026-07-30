@@ -5,6 +5,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 import java.util.Scanner;
 
 import domain.Diet;
@@ -298,8 +299,53 @@ public class UserMenu {
 //        }
 //    }
     
+//    // 버전3
+//    private void handleShowAllDiets(User user, DietManagerImpl dietManager) {
+//        System.out.println("\n--- [ 내 전체 식단 목록 ] ---");
+//        Diet[] list = dietManager.getDietList();
+//
+//        if (list == null || list.length == 0) {
+//            System.out.println("등록된 식단 기록이 없습니다.");
+//            return;
+//        }
+//
+//        boolean hasMyDiet = false;
+//
+//        for (Diet d : list) {
+//            if (d.getUser() != null && d.getUser().getId().equals(user.getId())) {
+//                hasMyDiet = true;
+//
+//                System.out.println("========================================");
+//                System.out.println("기록 ID: " + d.getDietId() + " | 날짜: " + d.getDietDate());
+//
+//                // 1. 아침, 점심, 저녁 메뉴별 상세 출력
+//                System.out.println(" - 아침: " + formatMenuListWithNutrients(d.getMorningMenus()));
+//                System.out.println(" - 점심: " + formatMenuListWithNutrients(d.getLunchMenus()));
+//                System.out.println(" - 저녁: " + formatMenuListWithNutrients(d.getDinnerMenus()));
+//
+//                // 2. 각 끼니별 총 칼로리 계산
+//                double morningKcal = DietKcalManager.calculateTotalKcal(d.getMorningMenus());
+//                double lunchKcal = DietKcalManager.calculateTotalKcal(d.getLunchMenus());
+//                double dinnerKcal = DietKcalManager.calculateTotalKcal(d.getDinnerMenus());
+//
+//                // 3. 하루 전체 총 칼로리 합계 계산
+//                double dailyTotalKcal = morningKcal + lunchKcal + dinnerKcal;
+//
+//                // 4. 총 칼로리 출력 (소수점 없이 정수로 표시)
+//                System.out.println("----------------------------------------");
+//                System.out.printf("🔥 하루 총 섭취 칼로리: %,d kcal\n", (int) dailyTotalKcal);
+//            }
+//        }
+//
+//        if (!hasMyDiet) {
+//            System.out.println("등록된 식단 기록이 없습니다.");
+//        }
+//    }
+    
     private void handleShowAllDiets(User user, DietManagerImpl dietManager) {
-        System.out.println("\n--- [ 내 전체 식단 목록 ] ---");
+        System.out.println("  📊  " + user.getName() + "님의 전체 식단 목록");
+        System.out.println("────────────────────────────────────────────────────────");
+        
         Diet[] list = dietManager.getDietList();
 
         if (list == null || list.length == 0) {
@@ -309,17 +355,23 @@ public class UserMenu {
 
         boolean hasMyDiet = false;
 
+        // 날짜를 보기 좋게 출력하기 위한 포맷터 (2026-07-31 (금) 형식)
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd (E)", Locale.KOREAN);
+
         for (Diet d : list) {
             if (d.getUser() != null && d.getUser().getId().equals(user.getId())) {
                 hasMyDiet = true;
 
-                System.out.println("========================================");
-                System.out.println("기록 ID: " + d.getDietId() + " | 날짜: " + d.getDietDate());
+                String formattedDate = (d.getDietDate() != null) ? dateFormat.format(d.getDietDate()) : String.valueOf(d.getDietDate());
+
+                System.out.println("\n────────────────────────────────────────────────────────");
+                System.out.printf("│ 📅 식단 날짜 : %-22s (기록 ID: %-4d) \n", formattedDate, d.getDietId());
+                System.out.println("────────────────────────────────────────────────────────");
 
                 // 1. 아침, 점심, 저녁 메뉴별 상세 출력
-                System.out.println(" - 아침: " + formatMenuListWithNutrients(d.getMorningMenus()));
-                System.out.println(" - 점심: " + formatMenuListWithNutrients(d.getLunchMenus()));
-                System.out.println(" - 저녁: " + formatMenuListWithNutrients(d.getDinnerMenus()));
+                System.out.println("│ 🌅 아침: " + formatMenuListWithNutrients(d.getMorningMenus()));
+                System.out.println("│ ☀️ 점심: " + formatMenuListWithNutrients(d.getLunchMenus()));
+                System.out.println("│ 🌙 저녁: " + formatMenuListWithNutrients(d.getDinnerMenus()));
 
                 // 2. 각 끼니별 총 칼로리 계산
                 double morningKcal = DietKcalManager.calculateTotalKcal(d.getMorningMenus());
@@ -329,9 +381,10 @@ public class UserMenu {
                 // 3. 하루 전체 총 칼로리 합계 계산
                 double dailyTotalKcal = morningKcal + lunchKcal + dinnerKcal;
 
-                // 4. 총 칼로리 출력 (소수점 없이 정수로 표시)
-                System.out.println("----------------------------------------");
-                System.out.printf("🔥 하루 총 섭취 칼로리: %,d kcal\n", (int) dailyTotalKcal);
+                // 4. 총 칼로리 출력
+                System.out.println("────────────────────────────────────────────────────────");
+                System.out.printf("│ 🔥 하루 총 섭취 칼로리: %,d kcal\n", (int) dailyTotalKcal);
+                System.out.println("────────────────────────────────────────────────────────");
             }
         }
 
@@ -392,6 +445,7 @@ public class UserMenu {
             System.out.println("[오류] 날짜 형식이 올바르지 않습니다. (yyyy-MM-dd 형식으로 입력해주세요)");
         }
     }
+    
 
  // 날짜 검색
     private void handleSearchDietByDate(DietManagerImpl dietManager) {
@@ -407,19 +461,25 @@ public class UserMenu {
             Diet[] results = dietManager.searchByDietDate(searchDate);
             User loginUser = userManager.getMyInfo();
 
-            System.out.println("\n>>> " + dateInput + " 식단 검색 결과 <<<");
-            boolean found = false;
 
+            System.out.println("\n  🔍  " + dateInput + " 식단 검색 결과");
+            System.out.println("────────────────────────────────────────────────────────");boolean found = false;
+         // 날짜를 보기 좋게 출력하기 위한 포맷터 (2026-07-30 (목) 형식)
+            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd (E)", Locale.KOREAN); 
+            
+            
             for (Diet d : results) {
                 if (d.getUser() != null && d.getUser().getId().equals(loginUser.getId())) {
                     found = true;
-                    System.out.println("----------------------------------------");
-                    System.out.println("식단 ID: " + d.getDietId());
+                    String formattedDate = (d.getDietDate() != null) ? dateFormat.format(d.getDietDate()) : dateInput;
                     
-                    // 영양 성분이 포함된 포맷터 적용
-                    System.out.println(" - 아침: " + formatMenuListWithNutrients(d.getMorningMenus()));
-                    System.out.println(" - 점심: " + formatMenuListWithNutrients(d.getLunchMenus()));
-                    System.out.println(" - 저녁: " + formatMenuListWithNutrients(d.getDinnerMenus()));
+                    System.out.println("\n────────────────────────────────────────────────────────");
+                    System.out.printf("│ 📅 식단 날짜 : %-22s (기록 ID: %-4d) \n", formattedDate, d.getDietId());
+                    System.out.println("────────────────────────────────────────────────────────");
+                 // 영양 성분이 포함된 포맷터 적용
+                    System.out.println("│ 🌅 아침: " + formatMenuListWithNutrients(d.getMorningMenus()));
+                    System.out.println("│ ☀️ 점심: " + formatMenuListWithNutrients(d.getLunchMenus()));
+                    System.out.println("│ 🌙 저녁: " + formatMenuListWithNutrients(d.getDinnerMenus()));
 
                     // 해당 날짜의 총 칼로리 계산 및 출력
                     double morningKcal = DietKcalManager.calculateTotalKcal(d.getMorningMenus());
@@ -427,8 +487,9 @@ public class UserMenu {
                     double dinnerKcal = DietKcalManager.calculateTotalKcal(d.getDinnerMenus());
                     double dailyTotalKcal = morningKcal + lunchKcal + dinnerKcal;
 
-                    System.out.println("----------------------------------------");
-                    System.out.printf("🔥 하루 총 섭취 칼로리: %,d kcal\n", (int) dailyTotalKcal);
+                    System.out.println("────────────────────────────────────────────────────────");
+                    System.out.printf("│ 🔥 하루 총 섭취 칼로리: %,d kcal\n", (int) dailyTotalKcal);
+                    System.out.println("────────────────────────────────────────────────────────");
                 }
             }
 
