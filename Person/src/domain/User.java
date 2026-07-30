@@ -115,7 +115,9 @@ public class User {
     
  // 객체 데이터를 파일에 한 줄로 저장하기 위해 쉼표(,) 구분 문자열로 변환
     public String toFileString() {
-        return id + "," + password + "," + name + "," + height + "," + weight + "," + disease + "," + isActive;
+        String followingStr = String.join("|", followingList);
+
+        return id + "," + password + "," + name + "," + height + "," + weight + "," + disease + "," + isActive + "," + followingStr;
     }
 
     // 파일에서 읽은 문자열 한 줄을 파싱하여 다시 User 객체로 복원
@@ -134,6 +136,17 @@ public class User {
 
         User user = new User(id, password, name, height, weight, disease);
         user.setActive(isActive);
+        
+        if(parts.length >= 8 && !parts[7].isEmpty()) {
+        	String[] followIds = parts[7].split("\\|");
+        	for(String fId : followIds) {
+        		user.addFollowing(fId);
+        	}
+        	
+        }
+        
+        
+        
         return user;
     }
 }

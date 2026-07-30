@@ -53,7 +53,8 @@ public class UserMenu {
                 System.out.println("2. 내 정보 수정");
                 System.out.println("3. 회원 탈퇴 (비활성화)");
                 System.out.println("4. 로그아웃");
-                System.out.println("5. 식단 관리"); // <-- 새로 추가!
+                System.out.println("5. 식단 관리");
+                System.out.println("6. 다른 회원 팔로우");
                 System.out.println("0. 뒤로가기(메인으로)");
                 System.out.print("메뉴 선택 >> ");
                 
@@ -72,7 +73,10 @@ public class UserMenu {
                         userManager.logout();
                         break;
                     case "5":
-                    	handleDietMenu();
+                        handleDietMenu();
+                        break;
+                    case "6":
+                        handleFollow();
                         break;
                     case "0":
                         System.out.println("[안내] 메인 메뉴로 돌아갑니다.");
@@ -106,8 +110,6 @@ public class UserMenu {
         System.out.print("이름 : ");
         String name = sc.nextLine();
         
-        // 숫자 입력 시 예외 발생을 방지하기 위해 Double.parseDouble() 사용
-        // (sc.nextDouble()을 쓰면 엔터 버퍼 문제로 다음 nextLine()이 씹히는 현상이 발생함)
         System.out.print("키(cm) : ");
         double height = Double.parseDouble(sc.nextLine());
         System.out.print("몸무게(kg) : ");
@@ -131,6 +133,7 @@ public class UserMenu {
             System.out.println("몸무게   : " + user.getWeight() + " kg");
             System.out.println("질환정보 : " + user.getDisease());
             System.out.println("계정상태 : " + (user.isActive() ? "활성화" : "비활성화"));
+            System.out.println("팔로우중 : " + (user.getFollowingList().isEmpty() ? "없음" : String.join(", ", user.getFollowingList())));
         }
     }
 
@@ -159,7 +162,6 @@ public class UserMenu {
         System.out.print("정말로 탈퇴하시겠습니까? (Y/N) : ");
         String confirm = sc.nextLine();
 
-        // 대소문자 상관없이 y가 입력되었을 때만 탈퇴 진행
         if (confirm.equalsIgnoreCase("Y")) {
             userManager.deleteMyAccount();
         } else {
@@ -167,7 +169,7 @@ public class UserMenu {
         }
     }
     
- // 식단 관련 메뉴 처리
+    // 식단 관련 메뉴 처리
     private void handleDietMenu() {
         DietManagerImpl dietManager = DietManagerImpl.getInstance();
         User loginUser = userManager.getMyInfo(); 
@@ -201,7 +203,7 @@ public class UserMenu {
         }
     }
     
- // 1. 식단 등록
+    // 1. 식단 등록
     private void handleRegisterDiet(User user, DietManagerImpl dietManager) {
         System.out.println("\n--- [ 새 식단 등록 ] ---");
         Diet diet = new Diet();
@@ -249,38 +251,28 @@ public class UserMenu {
                 System.out.println(" - 아침: " + String.join(", ", d.getMorningMenus()));
                 System.out.println(" - 점심: " + String.join(", ", d.getLunchMenus()));
                 System.out.println(" - 저녁: " + String.join(", ", d.getDinnerMenus()));
-
-//                // 칼로리 계산 및 출력
-//                int totalKcal = calculateTotalKcal(d);
-//                System.out.println(" [총 칼로리]: " + totalKcal + " kcal");
             }
         }
     }
 
     // 날짜 검색
     private void handleSearchDietByDate(DietManagerImpl dietManager) {
-    	System.out.println("\n--- [ 날짜별 식단 검색 ] ---");
+        System.out.println("\n--- [ 날짜별 식단 검색 ] ---");
         System.out.print("조회할 날짜를 입력하세요 (예: 2026-07-30) : ");
         String dateInput = sc.nextLine().trim();
 
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-        sdf.setLenient(false); // 엄격한 날짜 검증 (예: 2026-02-31 차단)
+        sdf.setLenient(false);
 
         try {
-            // 입력받은 문자열을 Date 객체로 파싱
             Date searchDate = sdf.parse(dateInput);
-
-            // 매니저에서 식단 검색 수행
             Diet[] results = dietManager.searchByDietDate(searchDate);
-
-            // 로그인한 현재 사용자 아이디 확인
             User loginUser = userManager.getMyInfo();
 
             System.out.println("\n>>> " + dateInput + " 식단 검색 결과 <<<");
             boolean found = false;
 
             for (Diet d : results) {
-                // 내 식단 정보만 출력
                 if (d.getUser() != null && d.getUser().getId().equals(loginUser.getId())) {
                     found = true;
                     System.out.println("----------------------------------------");
@@ -288,10 +280,6 @@ public class UserMenu {
                     System.out.println(" - 아침: " + (d.getMorningMenus().isEmpty() ? "없음" : String.join(", ", d.getMorningMenus())));
                     System.out.println(" - 점심: " + (d.getLunchMenus().isEmpty() ? "없음" : String.join(", ", d.getLunchMenus())));
                     System.out.println(" - 저녁: " + (d.getDinnerMenus().isEmpty() ? "없음" : String.join(", ", d.getDinnerMenus())));
-//
-//                    // 총 칼로리 계산 및 출력
-//                    int totalKcal = calculateTotalKcal(d);
-//                    System.out.println(" [총 칼로리]: " + totalKcal + " kcal");
                 }
             }
 
@@ -302,27 +290,26 @@ public class UserMenu {
         } catch (ParseException e) {
             System.out.println("[오류] 날짜 형식이 올바르지 않습니다. (yyyy-MM-dd 형식으로 입력해주세요)");
         } catch (DietDateNotFoundException e) {
-            // 해당 날짜에 식단 데이터가 없을 때 발생하는 예외 처리
             System.out.println(e.getMessage());
         }
     }
-
-//    // 영양 및 총 칼로리 계산 메서드 (예외 처리 포함)
-//    private int calculateTotalKcal(Diet diet) {
-//        int totalKcal = 0;
-//        List<String> allMenus = new java.util.ArrayList<>();
-//        allMenus.addAll(diet.getMorningMenus());
-//        allMenus.addAll(diet.getLunchMenus());
-//        allMenus.addAll(diet.getDinnerMenus());
-//
-//        for (String menu : allMenus) {
-//            try {
-//                DietKcalInfo info = manager.DietKcalManager.getKcalInfo(menu);
-//                totalKcal += info.getKcal();
-//            } catch (exception.KcalNotFoundException e) {
-//                System.out.println("   " + e.getMessage());
-//            }
-//        }
-//        return totalKcal;
-//    }
+    
+    // [F111] 다른 회원 팔로우 입출력 처리
+    private void handleFollow() {
+        System.out.println("\n--- [ 다른 회원 팔로우 ] ---");
+        System.out.print("팔로우할 회원의 아이디를 입력하세요 : ");
+        String targetId = sc.nextLine().trim();
+        
+        if (targetId.isEmpty()) {
+            System.out.println("[오류] 아이디를 입력해주세요.");
+            return;
+        }
+        
+        User loginUser = userManager.getMyInfo();
+        if (loginUser != null) {
+            userManager.follow(loginUser.getId(), targetId);
+        } else {
+            System.out.println("[오류] 로그인 정보를 찾을 수 없습니다.");
+        }
+    }
 }
