@@ -16,9 +16,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 
 import domain.Diet;
+import domain.User;
 import exception.DietDateNotFoundException;
 
 import java.util.Date;
@@ -34,7 +36,10 @@ public class DietManagerImpl implements DietManager {
 	// 저장할 파일 경로 및 파일명 지정
 //	private final String DIET_FILE_PATH = "diets.txt";
 	private File file = new File("diets.json");
-	private Gson gson = new Gson();
+//	private Gson gson = new Gson();
+	private Gson gson = new GsonBuilder()
+		    .setDateFormat("yyyy-MM-dd") // 날짜를 연-월-일 형식으로만 다루도록 지정
+		    .create();
 	
 	public DietManagerImpl() {
 		loadData();
@@ -49,11 +54,41 @@ public class DietManagerImpl implements DietManager {
 	
 	@Override
 	public void addDiet(Diet diet) {
-		if(dietList.size() < MAX_SIZE) {
-			dietList.add(diet);
-		}else {
-			System.out.println("더 이상 식단을 등록할 수 없습니다.");
-		}
+		// 1. 매개변수 유효성 검사
+	    if (diet == null || diet.getUser() == null || diet.getDietDate() == null) {
+	        System.out.println("⚠️ 유효하지 않은 식단 정보입니다.");
+	        return;
+	    }
+
+	    // 날짜를 YYYY-MM-DD 형식의 문자열로 변환하는 포맷터 (시간 제거)
+	    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+	    String targetDateStr = sdf.format(diet.getDietDate());
+
+	    // 2. 같은 사용자 & 같은 날짜(시간 제외) 중복 체크
+	    for (Diet existingDiet : dietList) {
+	        if (existingDiet != null && existingDiet.getUser() != null && existingDiet.getDietDate() != null) {
+	            
+	            boolean isSameUser = existingDiet.getUser().getId().equals(diet.getUser().getId());
+	            
+	            // 기존 등록된 날짜도 YYYY-MM-DD 형태로 변환해서 비교
+	            String existingDateStr = sdf.format(existingDiet.getDietDate());
+	            boolean isSameDate = existingDateStr.equals(targetDateStr);
+
+	            if (isSameUser && isSameDate) {
+	                System.out.println("⚠️ 이미 해당 날짜(" + targetDateStr + ")에 등록된 식단이 존재합니다.");
+	                System.out.println("기존 식단을 수정하거나 삭제 후 다시 시도해주세요.");
+	                return; // 등록 취소 및 종료
+	            }
+	        }
+	    }
+
+	    // 3. 리스트 용량 체크 및 등록
+	    if (dietList.size() < MAX_SIZE) {
+	        dietList.add(diet);
+	        System.out.println("✅ 식단이 성공적으로 등록되었습니다.");
+	    } else {
+	        System.out.println("⚠️ 더 이상 식단을 등록할 수 없습니다. (최대 용량 초과)");
+	    }
 		
 	}
 	
@@ -105,12 +140,47 @@ public class DietManagerImpl implements DietManager {
 	
 	}
 	
+	@Override
+	public boolean updateDiet(User user, Date dietDate, Diet newDiet) {
+		if (user == null || dietDate == null || newDiet == null) {
+			System.out.println("⚠️ 유효하지 않은 수정 요청입니다.");
+			return false;
+		}
+
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+		String targetDateStr = sdf.format(dietDate);
+
+		for (Diet existingDiet : dietList) {
+			if (existingDiet != null && existingDiet.getUser() != null && existingDiet.getDietDate() != null) {
+				// 1. 동일 사용자 확인
+				boolean isSameUser = existingDiet.getUser().getId().equals(user.getId());
+				
+				// 2. 동일 날짜(YYYY-MM-DD) 확인
+				String existingDateStr = sdf.format(existingDiet.getDietDate());
+				boolean isSameDate = existingDateStr.equals(targetDateStr);
+
+				if (isSameUser && isSameDate) {
+					// 3. 아침, 점심, 저녁 식단 데이터 덮어쓰기 (업데이트)
+					existingDiet.setMorningMenus(newDiet.getMorningMenus());
+					existingDiet.setLunchMenus(newDiet.getLunchMenus());
+					existingDiet.setDinnerMenus(newDiet.getDinnerMenus());
+					
+					// 4. 변경사항 파일에 저장
+					saveData();
+					return true;
+				}
+			}
+		}
+
+		return false; // 해당 사용자의 날짜별 식단 기록을 찾지 못한 경우
+	}
+	
 	
 	@Override
 	public void saveData() {
 		try (BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file)))) {
 			bw.write(gson.toJson(dietList));
-			System.out.println("저장완료");
+//			System.out.println("저장완료");
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
