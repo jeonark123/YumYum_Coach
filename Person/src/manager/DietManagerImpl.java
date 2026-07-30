@@ -175,6 +175,35 @@ public class DietManagerImpl implements DietManager {
 		return false; // 해당 사용자의 날짜별 식단 기록을 찾지 못한 경우
 	}
 	
+	@Override
+    public boolean deleteDiet(User user, Date targetDate) {
+        if (user == null || targetDate == null) {
+            return false;
+        }
+
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+        String targetDateStr = sdf.format(targetDate);
+
+        // 등록된 식단 리스트에서 해당 유저의 특정 날짜 식단 찾기
+        for (int i = 0; i < dietList.size(); i++) {
+            Diet diet = dietList.get(i);
+            
+            if (diet.getUser() != null && diet.getUser().getId().equals(user.getId())) {
+                String dietDateStr = sdf.format(diet.getDietDate());
+                
+                if (targetDateStr.equals(dietDateStr)) {
+                    // 조건에 해당하는 식단 삭제
+                    dietList.remove(i);
+                    // 파일 저장 메서드 호출 (프로젝트 내 저장 메서드명에 맞춰 확인)
+                    saveData(); 
+                    return true;
+                }
+            }
+        }
+        
+        return false; // 삭제할 대상을 찾지 못한 경우
+    }
+	
 	
 	@Override
 	public void saveData() {

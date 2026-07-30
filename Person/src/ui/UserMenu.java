@@ -204,7 +204,7 @@ public class UserMenu {
                 	handleUpdateDiet(loginUser, dietManager);
                 	break;
                 case "5":
-                	// 삭제
+                	handleDeleteDietByDate(loginUser, dietManager);
                 	break;
                     
                 case "0":
@@ -337,6 +337,59 @@ public class UserMenu {
 
         if (!hasMyDiet) {
             System.out.println("등록된 식단 기록이 없습니다.");
+        }
+    }
+    
+ // 5. 날짜별 식단 삭제
+    private void handleDeleteDietByDate(User user, DietManagerImpl dietManager) {
+        System.out.println("\n--- [ 날짜별 식단 삭제 ] ---");
+        System.out.print("삭제할 식단의 날짜를 입력하세요 (예: 2026-07-30) : ");
+        String dateInput = sc.nextLine().trim();
+
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+        sdf.setLenient(false);
+
+        try {
+            Date targetDate = sdf.parse(dateInput);
+
+            // 해당 날짜에 본인의 식단 기록이 존재하는지 사전 확인
+            boolean exists = false;
+            try {
+                Diet[] results = dietManager.searchByDietDate(targetDate);
+                for (Diet d : results) {
+                    if (d.getUser() != null && d.getUser().getId().equals(user.getId())) {
+                        exists = true;
+                        break;
+                    }
+                }
+            } catch (DietDateNotFoundException e) {
+                exists = false;
+            }
+
+            if (!exists) {
+                System.out.println("[안내] 해당 날짜(" + dateInput + ")에 등록된 식단 기록이 없습니다.");
+                return;
+            }
+
+            // 진짜 삭제할 것인지 사용자 재확인
+            System.out.print("정말로 " + dateInput + " 날짜의 식단을 삭제하시겠습니까? (Y/N) : ");
+            String confirm = sc.nextLine().trim();
+
+            if (confirm.equalsIgnoreCase("Y")) {
+                // DietManager의 삭제 메서드 호출 (구현된 manager 메서드 명에 맞춰 전달)
+                boolean isDeleted = dietManager.deleteDiet(user, targetDate);
+
+                if (isDeleted) {
+                    System.out.println("[안내] " + dateInput + " 날짜의 식단이 성공적으로 삭제되었습니다.");
+                } else {
+                    System.out.println("[오류] 식단 삭제 처리에 실패했습니다.");
+                }
+            } else {
+                System.out.println("[안내] 삭제가 취소되었습니다.");
+            }
+
+        } catch (ParseException e) {
+            System.out.println("[오류] 날짜 형식이 올바르지 않습니다. (yyyy-MM-dd 형식으로 입력해주세요)");
         }
     }
 
