@@ -58,5 +58,24 @@ public class DietKcalManager {
 	private static String normalize(String text) {
 	    return text.trim().replace(" ", "");
 	}
+	
+	public static double calculateTotalKcal(List<String> menuList) {
+	    if (menuList == null || menuList.isEmpty()) {
+	        return 0.0;
+	    }
+
+	    double totalKcal = 0.0;
+
+	    for (String menu : menuList) {
+	        if (menu == null || menu.trim().isEmpty()) continue;
+	        
+	        DietKcalInfo info = findByFoodName(menu.trim());
+	        if (info != null) {
+	            totalKcal += info.getKcal();
+	        }
+	    }
+
+	    return totalKcal;
+	}
 
 }

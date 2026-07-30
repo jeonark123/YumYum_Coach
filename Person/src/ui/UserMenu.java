@@ -181,9 +181,11 @@ public class UserMenu {
             System.out.println("\n========================================");
             System.out.println("  [ 식단 관리 메뉴 - " + loginUser.getName() + "님 ]");
             System.out.println("========================================");
-            System.out.println("1. 식단 등록");
+            System.out.println("1. 오늘 식단 등록");
             System.out.println("2. 내 전체 식단 조회 (총 칼로리 포함)");
             System.out.println("3. 날짜별 식단 검색");
+            System.out.println("4. 원하는 날짜 식단 수정(등록)");
+            System.out.println("5. 원하는 날짜 식단 삭제");
             System.out.println("0. 이전 메뉴로");
             System.out.print("선택 >> ");
 
@@ -198,6 +200,13 @@ public class UserMenu {
                 case "3":
                     handleSearchDietByDate(dietManager);
                     break;
+                case "4":
+                	handleUpdateDiet(loginUser, dietManager);
+                	break;
+                case "5":
+                	// 삭제
+                	break;
+                    
                 case "0":
                     return;
                 default:
@@ -234,10 +243,11 @@ public class UserMenu {
 
         dietManager.addDiet(diet);
         dietManager.saveData();
-        System.out.println("[안내] 식단이 successfully 저장되었습니다.");
+//        System.out.println("[안내] 식단이 successfully 저장되었습니다.");
     }
 
     // 2. 전체 식단 및 칼로리 출력
+    // //버전1
 //    private void handleShowAllDiets(User user, DietManagerImpl dietManager) {
 //        System.out.println("\n--- [ 내 전체 식단 목록 ] ---");
 //        Diet[] list = dietManager.getDietList();
@@ -257,6 +267,37 @@ public class UserMenu {
 //            }
 //        }
 //    }
+//    // 버전 2
+//    private void handleShowAllDiets(User user, DietManagerImpl dietManager) {
+//        System.out.println("\n--- [ 내 전체 식단 목록 ] ---");
+//        Diet[] list = dietManager.getDietList();
+//
+//        if (list == null || list.length == 0) {
+//            System.out.println("등록된 식단 기록이 없습니다.");
+//            return;
+//        }
+//
+//        boolean hasMyDiet = false;
+//
+//        for (Diet d : list) {
+//            if (d.getUser() != null && d.getUser().getId().equals(user.getId())) {
+//                hasMyDiet = true;
+//
+//                System.out.println("========================================");
+//                System.out.println("기록 ID: " + d.getDietId() + " | 날짜: " + d.getDietDate());
+//
+//                // JSON DB와 연동된 포맷팅 사용
+//                System.out.println(" - 아침: " + formatMenuListWithNutrients(d.getMorningMenus()));
+//                System.out.println(" - 점심: " + formatMenuListWithNutrients(d.getLunchMenus()));
+//                System.out.println(" - 저녁: " + formatMenuListWithNutrients(d.getDinnerMenus()));
+//            }
+//        }
+//
+//        if (!hasMyDiet) {
+//            System.out.println("등록된 식단 기록이 없습니다.");
+//        }
+//    }
+    
     private void handleShowAllDiets(User user, DietManagerImpl dietManager) {
         System.out.println("\n--- [ 내 전체 식단 목록 ] ---");
         Diet[] list = dietManager.getDietList();
@@ -275,10 +316,22 @@ public class UserMenu {
                 System.out.println("========================================");
                 System.out.println("기록 ID: " + d.getDietId() + " | 날짜: " + d.getDietDate());
 
-                // JSON DB와 연동된 포맷팅 사용
+                // 1. 아침, 점심, 저녁 메뉴별 상세 출력
                 System.out.println(" - 아침: " + formatMenuListWithNutrients(d.getMorningMenus()));
                 System.out.println(" - 점심: " + formatMenuListWithNutrients(d.getLunchMenus()));
                 System.out.println(" - 저녁: " + formatMenuListWithNutrients(d.getDinnerMenus()));
+
+                // 2. 각 끼니별 총 칼로리 계산
+                double morningKcal = DietKcalManager.calculateTotalKcal(d.getMorningMenus());
+                double lunchKcal = DietKcalManager.calculateTotalKcal(d.getLunchMenus());
+                double dinnerKcal = DietKcalManager.calculateTotalKcal(d.getDinnerMenus());
+
+                // 3. 하루 전체 총 칼로리 합계 계산
+                double dailyTotalKcal = morningKcal + lunchKcal + dinnerKcal;
+
+                // 4. 총 칼로리 출력 (소수점 없이 정수로 표시)
+                System.out.println("----------------------------------------");
+                System.out.printf("🔥 하루 총 섭취 칼로리: %,d kcal\n", (int) dailyTotalKcal);
             }
         }
 
@@ -287,7 +340,7 @@ public class UserMenu {
         }
     }
 
-    // 날짜 검색
+ // 날짜 검색
     private void handleSearchDietByDate(DietManagerImpl dietManager) {
         System.out.println("\n--- [ 날짜별 식단 검색 ] ---");
         System.out.print("조회할 날짜를 입력하세요 (예: 2026-07-30) : ");
@@ -309,9 +362,20 @@ public class UserMenu {
                     found = true;
                     System.out.println("----------------------------------------");
                     System.out.println("식단 ID: " + d.getDietId());
-                    System.out.println(" - 아침: " + (d.getMorningMenus().isEmpty() ? "없음" : String.join(", ", d.getMorningMenus())));
-                    System.out.println(" - 점심: " + (d.getLunchMenus().isEmpty() ? "없음" : String.join(", ", d.getLunchMenus())));
-                    System.out.println(" - 저녁: " + (d.getDinnerMenus().isEmpty() ? "없음" : String.join(", ", d.getDinnerMenus())));
+                    
+                    // 영양 성분이 포함된 포맷터 적용
+                    System.out.println(" - 아침: " + formatMenuListWithNutrients(d.getMorningMenus()));
+                    System.out.println(" - 점심: " + formatMenuListWithNutrients(d.getLunchMenus()));
+                    System.out.println(" - 저녁: " + formatMenuListWithNutrients(d.getDinnerMenus()));
+
+                    // 해당 날짜의 총 칼로리 계산 및 출력
+                    double morningKcal = DietKcalManager.calculateTotalKcal(d.getMorningMenus());
+                    double lunchKcal = DietKcalManager.calculateTotalKcal(d.getLunchMenus());
+                    double dinnerKcal = DietKcalManager.calculateTotalKcal(d.getDinnerMenus());
+                    double dailyTotalKcal = morningKcal + lunchKcal + dinnerKcal;
+
+                    System.out.println("----------------------------------------");
+                    System.out.printf("🔥 하루 총 섭취 칼로리: %,d kcal\n", (int) dailyTotalKcal);
                 }
             }
 
@@ -323,6 +387,100 @@ public class UserMenu {
             System.out.println("[오류] 날짜 형식이 올바르지 않습니다. (yyyy-MM-dd 형식으로 입력해주세요)");
         } catch (DietDateNotFoundException e) {
             System.out.println(e.getMessage());
+        }
+    }
+    
+ // 4. 지난 날짜 식단 수정 및 신규 등록
+    private void handleUpdateDiet(User user, DietManagerImpl dietManager) {
+        System.out.println("\n--- [ 지난 날짜 식단 수정 / 등록 ] ---");
+        System.out.print("수정 또는 등록할 날짜를 입력하세요 (예: 2026-07-30) : ");
+        String dateInput = sc.nextLine().trim();
+
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+        sdf.setLenient(false);
+
+        try {
+            Date targetDate = sdf.parse(dateInput);
+
+            // 해당 날짜에 등록된 식단 데이터가 있는지 미리 확인
+            boolean exists = false;
+            try {
+                Diet[] results = dietManager.searchByDietDate(targetDate);
+                for (Diet d : results) {
+                    if (d.getUser() != null && d.getUser().getId().equals(user.getId())) {
+                        exists = true;
+                        break;
+                    }
+                }
+            } catch (DietDateNotFoundException e) {
+                exists = false;
+            }
+
+            // 등록된 식단이 없을 경우 안내 문구 출력
+            if (!exists) {
+                System.out.println("[안내] 해당 날짜(" + dateInput + ")에 등록된 식단이 없으므로 신규 등록합니다!");
+            }
+
+            // 새 식단 객체 생성
+            Diet dietData = new Diet();
+            dietData.setDietId((int) (System.currentTimeMillis() % 10000));
+            dietData.setUser(user);
+            dietData.setDietDate(targetDate);
+
+            // 메뉴 입력받기 (아침, 점심, 저녁 중 최소 하나 이상 입력될 때까지 반복)
+            while (true) {
+                System.out.println("\n식단 메뉴를 입력해주세요. (최소 하나의 끼니에는 메뉴를 입력해야 합니다)");
+
+                System.out.print("아침 메뉴 (쉼표로 구분 예: 밥,계란후라이) : ");
+                String morningInput = sc.nextLine();
+                for (String m : morningInput.split(",")) {
+                    if (!m.trim().isEmpty()) dietData.getMorningMenus().add(m.trim());
+                }
+
+                System.out.print("점심 메뉴 (쉼표로 구분 예: 닭가슴살,샐러드) : ");
+                String lunchInput = sc.nextLine();
+                for (String m : lunchInput.split(",")) {
+                    if (!m.trim().isEmpty()) dietData.getLunchMenus().add(m.trim());
+                }
+
+                System.out.print("저녁 메뉴 (쉼표로 구분 예: 샐러드) : ");
+                String dinnerInput = sc.nextLine();
+                for (String m : dinnerInput.split(",")) {
+                    if (!m.trim().isEmpty()) dietData.getDinnerMenus().add(m.trim());
+                }
+
+                // 입력된 메뉴가 하나라도 있는지 검증
+                boolean isMorningEmpty = dietData.getMorningMenus().isEmpty();
+                boolean isLunchEmpty = dietData.getLunchMenus().isEmpty();
+                boolean isDinnerEmpty = dietData.getDinnerMenus().isEmpty();
+
+                if (isMorningEmpty && isLunchEmpty && isDinnerEmpty) {
+                    System.out.println("\n[오류] 아무런 메뉴도 입력되지 않아 저장할 수 없습니다! 식단 정보를 다시 입력해주세요.");
+                    // 리스트 초기화 후 다시 입력받기
+                    dietData.getMorningMenus().clear();
+                    dietData.getLunchMenus().clear();
+                    dietData.getDinnerMenus().clear();
+                } else {
+                    break; // 유효한 입력이 들어왔으므로 반복문 탈출
+                }
+            }
+
+            // 기존 식단이 있으면 수정(updateDiet), 없으면 신규 추가(addDiet)
+            if (exists) {
+                boolean isUpdated = dietManager.updateDiet(user, targetDate, dietData);
+                if (isUpdated) {
+                    System.out.println("\n[안내] " + dateInput + " 날짜의 식단이 성공적으로 수정되었습니다!");
+                } else {
+                    System.out.println("\n[오류] 식단 수정에 실패했습니다.");
+                }
+            } else {
+                dietManager.addDiet(dietData);
+                dietManager.saveData();
+                System.out.println("\n[안내] " + dateInput + " 날짜에 새로운 식단이 성공적으로 등록되었습니다!");
+            }
+
+        } catch (ParseException e) {
+            System.out.println("[오류] 날짜 형식이 올바르지 않습니다. (yyyy-MM-dd 형식으로 입력해주세요)");
         }
     }
     

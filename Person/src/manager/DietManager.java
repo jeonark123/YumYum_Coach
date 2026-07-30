@@ -3,6 +3,7 @@ package manager;
 import java.util.Date;
 
 import domain.Diet;
+import domain.User;
 import exception.DietDateNotFoundException;
 
 public interface DietManager {
@@ -20,6 +21,8 @@ public interface DietManager {
 	
 	// 총 칼로리 계산
 //	int getTotalKcal();
+	
+	public abstract boolean updateDiet(User user, Date dietDate, Diet newDiet);
 	
 	// 저장
 	public abstract void saveData();
