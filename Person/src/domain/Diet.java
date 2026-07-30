@@ -75,11 +75,11 @@ public class Diet {
 		this.dinnerMenus = dinnerMenus;
 	}
 
-	public Date getDietdate() {
+	public Date getDietDate() {
 		return dietdate;
 	}
 
-	public void setDietdate(Date dietdate) {
+	public void setDietDate(Date dietdate) {
 		this.dietdate = dietdate;
 	}
 
