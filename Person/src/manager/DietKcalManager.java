@@ -16,7 +16,7 @@ public class DietKcalManager {
 	private static Map<String, DietKcalInfo> kcalMap = new HashMap<>();
 	private static final String JSON_FILE_PATH = "food_kcal.json";
 	
-	public DietKcalManager() {
+	static {
 		kcalLoadData();
 	}
 
