@@ -21,11 +21,8 @@ public class UserRepository {
         loadFromFile();
     }
 
-    /**
-     * [F106] 회원 등록
-     * @param user 가입할 회원 객체
-     * @return 등록 성공 여부
-     */
+    
+     // [F106] 회원 등록
     public boolean insert(User user) {
         // 아이디 중복 체크
         if (selectById(user.getId()) != null) {
@@ -37,11 +34,8 @@ public class UserRepository {
         return true;
     }
 
-    /**
-     * [F107, F110] 아이디로 회원 조회
-     * @param id 찾을 아이디
-     * @return 일치하는 User 객체 (없으면 null)
-     */
+   
+     //[F107, F110] 아이디로 회원 조회
     public User selectById(String id) {
         for (User u : userList) {
             if (u.getId().equals(id)) {
@@ -51,11 +45,7 @@ public class UserRepository {
         return null;
     }
 
-    /**
-     * [F108] 회원 정보 수정
-     * @param updatedUser 변경된 정보를 담은 User 객체
-     * @return 수정 성공 여부
-     */
+    // [F108] 회원 정보 수정
     public boolean update(User updatedUser) {
         User existingUser = selectById(updatedUser.getId());
         if (existingUser != null) {
@@ -70,11 +60,8 @@ public class UserRepository {
         return false;
     }
 
-    /**
-     * [F109] 회원 비활성화 (삭제 대신 상태 변경)
-     * @param id 탈퇴할 회원 아이디
-     * @return 처리 성공 여부
-     */
+    
+     // [F109] 회원 비활성화 (삭제 대신 상태 변경)
     public boolean deactivate(String id) {
         User user = selectById(id);
         if (user != null) {
@@ -85,9 +72,8 @@ public class UserRepository {
         return false;
     }
 
-    /**
-     * 전체 회원 목록 조회 (필요 시 관리자용이나 디버깅용으로 활용)
-     */
+    
+     // 전체 회원 목록 조회 (필요 시 관리자용이나 디버깅용으로 활용)
     public List<User> selectAll() {
         return userList;
     }
