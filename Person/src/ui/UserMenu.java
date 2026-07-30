@@ -2,13 +2,16 @@ package ui;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Scanner;
 
 import domain.Diet;
+import domain.DietKcalInfo;
 import domain.User;
 import exception.DietDateNotFoundException;
+import manager.DietKcalManager;
 import manager.DietManagerImpl;
 import manager.UserManager;
 
@@ -235,6 +238,25 @@ public class UserMenu {
     }
 
     // 2. 전체 식단 및 칼로리 출력
+//    private void handleShowAllDiets(User user, DietManagerImpl dietManager) {
+//        System.out.println("\n--- [ 내 전체 식단 목록 ] ---");
+//        Diet[] list = dietManager.getDietList();
+//
+//        if (list == null || list.length == 0) {
+//            System.out.println("등록된 식단 기록이 없습니다.");
+//            return;
+//        }
+//
+//        for (Diet d : list) {
+//            if (d.getUser() != null && d.getUser().getId().equals(user.getId())) {
+//                System.out.println("========================================");
+//                System.out.println("기록 ID: " + d.getDietId() + " | 날짜: " + d.getDietDate());
+//                System.out.println(" - 아침: " + String.join(", ", d.getMorningMenus()));
+//                System.out.println(" - 점심: " + String.join(", ", d.getLunchMenus()));
+//                System.out.println(" - 저녁: " + String.join(", ", d.getDinnerMenus()));
+//            }
+//        }
+//    }
     private void handleShowAllDiets(User user, DietManagerImpl dietManager) {
         System.out.println("\n--- [ 내 전체 식단 목록 ] ---");
         Diet[] list = dietManager.getDietList();
@@ -244,14 +266,24 @@ public class UserMenu {
             return;
         }
 
+        boolean hasMyDiet = false;
+
         for (Diet d : list) {
             if (d.getUser() != null && d.getUser().getId().equals(user.getId())) {
+                hasMyDiet = true;
+
                 System.out.println("========================================");
                 System.out.println("기록 ID: " + d.getDietId() + " | 날짜: " + d.getDietDate());
-                System.out.println(" - 아침: " + String.join(", ", d.getMorningMenus()));
-                System.out.println(" - 점심: " + String.join(", ", d.getLunchMenus()));
-                System.out.println(" - 저녁: " + String.join(", ", d.getDinnerMenus()));
+
+                // JSON DB와 연동된 포맷팅 사용
+                System.out.println(" - 아침: " + formatMenuListWithNutrients(d.getMorningMenus()));
+                System.out.println(" - 점심: " + formatMenuListWithNutrients(d.getLunchMenus()));
+                System.out.println(" - 저녁: " + formatMenuListWithNutrients(d.getDinnerMenus()));
             }
+        }
+
+        if (!hasMyDiet) {
+            System.out.println("등록된 식단 기록이 없습니다.");
         }
     }
 
@@ -311,5 +343,39 @@ public class UserMenu {
         } else {
             System.out.println("[오류] 로그인 정보를 찾을 수 없습니다.");
         }
+    }
+    
+    /**
+     * 메뉴 이름 목록을 받아서 "음식명(칼로리: ~kcal, 탄수화물: ~g, 단백질: ~g, 지방: ~g)" 형태로 포맷팅합니다.
+     */
+    private String formatMenuListWithNutrients(List<String> menuList) {
+        if (menuList == null || menuList.isEmpty()) {
+            return "없음";
+        }
+
+        List<String> formattedMenus = new ArrayList<>();
+
+        for (String menu : menuList) {
+            if (menu == null || menu.trim().isEmpty()) continue;
+
+            String trimmedMenu = menu.trim();
+            // JSON DB에서 검색
+            DietKcalInfo info = DietKcalManager.findByFoodName(trimmedMenu);
+
+            if (info != null) {
+                String formatted = String.format("%s(칼로리: %.0fkcal, 탄수화물: %.1fg, 단백질: %.1fg, 지방: %.1fg)",
+                        info.getFoodName(), // DTO의 Getter명에 맞게 조정
+                        info.getKcal(),
+                        info.getCarbohydrate(),
+                        info.getProtein(),
+                        info.getFat());
+                formattedMenus.add(formatted);
+            } else {
+                // DB에 없는 음식일 경우 안전하게 표시
+                formattedMenus.add(trimmedMenu + "(정보없음)");
+            }
+        }
+
+        return String.join(", ", formattedMenus);
     }
 }
