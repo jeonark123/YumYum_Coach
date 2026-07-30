@@ -20,6 +20,11 @@ public class DietManagerImpl implements DietManager {
 	
 	@Override
 	public void addDiet(Diet diet) {
+		if(dietList.size() < MAX_SIZE) {
+			dietList.add(diet);
+		}else {
+			System.out.println("더 이상 식단을 등록할 수 없습니다.");
+		}
 		
 	}
 	
