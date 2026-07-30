@@ -1,11 +1,14 @@
 package ui;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.Scanner;
 
 import domain.Diet;
 import domain.User;
+import exception.DietDateNotFoundException;
 import manager.DietManagerImpl;
 import manager.UserManager;
 
@@ -256,7 +259,52 @@ public class UserMenu {
 
     // 날짜 검색
     private void handleSearchDietByDate(DietManagerImpl dietManager) {
-        System.out.println("\n[안내] 날짜별 식단 조회 기능 구현 영역입니다.");
+    	System.out.println("\n--- [ 날짜별 식단 검색 ] ---");
+        System.out.print("조회할 날짜를 입력하세요 (예: 2026-07-30) : ");
+        String dateInput = sc.nextLine().trim();
+
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+        sdf.setLenient(false); // 엄격한 날짜 검증 (예: 2026-02-31 차단)
+
+        try {
+            // 입력받은 문자열을 Date 객체로 파싱
+            Date searchDate = sdf.parse(dateInput);
+
+            // 매니저에서 식단 검색 수행
+            Diet[] results = dietManager.searchByDietDate(searchDate);
+
+            // 로그인한 현재 사용자 아이디 확인
+            User loginUser = userManager.getMyInfo();
+
+            System.out.println("\n>>> " + dateInput + " 식단 검색 결과 <<<");
+            boolean found = false;
+
+            for (Diet d : results) {
+                // 내 식단 정보만 출력
+                if (d.getUser() != null && d.getUser().getId().equals(loginUser.getId())) {
+                    found = true;
+                    System.out.println("----------------------------------------");
+                    System.out.println("식단 ID: " + d.getDietId());
+                    System.out.println(" - 아침: " + (d.getMorningMenus().isEmpty() ? "없음" : String.join(", ", d.getMorningMenus())));
+                    System.out.println(" - 점심: " + (d.getLunchMenus().isEmpty() ? "없음" : String.join(", ", d.getLunchMenus())));
+                    System.out.println(" - 저녁: " + (d.getDinnerMenus().isEmpty() ? "없음" : String.join(", ", d.getDinnerMenus())));
+//
+//                    // 총 칼로리 계산 및 출력
+//                    int totalKcal = calculateTotalKcal(d);
+//                    System.out.println(" [총 칼로리]: " + totalKcal + " kcal");
+                }
+            }
+
+            if (!found) {
+                System.out.println("[안내] 해당 날짜에 " + loginUser.getName() + "님의 식단 기록이 없습니다.");
+            }
+
+        } catch (ParseException e) {
+            System.out.println("[오류] 날짜 형식이 올바르지 않습니다. (yyyy-MM-dd 형식으로 입력해주세요)");
+        } catch (DietDateNotFoundException e) {
+            // 해당 날짜에 식단 데이터가 없을 때 발생하는 예외 처리
+            System.out.println(e.getMessage());
+        }
     }
 
 //    // 영양 및 총 칼로리 계산 메서드 (예외 처리 포함)
