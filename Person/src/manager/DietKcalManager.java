@@ -39,7 +39,7 @@ public class DietKcalManager {
                 kcalMap.put(normalize(info.getFoodName()), info);
             }
 
-            System.out.println("칼로리 DB 로딩 완료: " + kcalMap.size() + "개");
+//            System.out.println("칼로리 DB 로딩 완료: " + kcalMap.size() + "개");
         } catch (IOException e) {
             System.out.println("칼로리 DB 파일을 읽을 수 없습니다: " + JSON_FILE_PATH);
         }
