@@ -123,4 +123,54 @@ public class UserManager {
     public boolean isLoggedIn() {
         return currentUser != null;
     }
+    
+    // [F111] 회원 팔로우 기능
+    // 자기 자신 팔로우x
+    public boolean follow(String myId, String targetId) {
+        if (myId.equals(targetId)) {
+            System.out.println("자기 자신은 팔로우할 수 없음");
+            return false;
+        }
+
+        // 존재하는 회원 조회
+        User me = userRepository.selectById(myId);
+        User target = userRepository.selectById(targetId);
+        
+        if (me == null || target == null) {
+            System.out.println("존재하지 않는 회원입니다.");
+            return false;
+        }
+        
+        // 팔로우 시도
+        if (me.addFollowing(targetId)) {
+            userRepository.update(me);
+
+            System.out.println("[알림]" + target.getName() + "(" + targetId + ")님을 팔로우했습니다.");
+            return true;
+        } else {
+            System.out.println("이미 팔로우하고 있는 회원입니다.");
+            return false;
+        }
+    }
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
 }

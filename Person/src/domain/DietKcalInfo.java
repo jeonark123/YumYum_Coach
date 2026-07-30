@@ -1,39 +1,52 @@
 package domain;
 
+import com.google.gson.annotations.SerializedName;
+
 public class DietKcalInfo {
-    private String foodId;      // 식품코드 (예: D101-004160000-0001)
-    private String menuName;    // 식품명
-    private double kcal;        // 에너지(kcal)
-    private double carbohydrate;// 탄수화물(g)
-    private double protein;     // 단백질(g)
-    private double fat;         // 지방(g)
+    @SerializedName("식품코드")
+    private String foodCode;
 
-    public DietKcalInfo() {}
+    @SerializedName("식품명")
+    private String foodName;
 
-    public DietKcalInfo(String foodId, String menuName, double kcal, double carbohydrate, double protein, double fat) {
-        this.foodId = foodId;
-        this.menuName = menuName;
-        this.kcal = kcal;
-        this.carbohydrate = carbohydrate;
-        this.protein = protein;
-        this.fat = fat;
+    @SerializedName("에너지(kcal)")
+    private double kcal;
+
+    @SerializedName("탄수화물(g)")
+    private double carbohydrate;
+
+    @SerializedName("단백질(g)")
+    private double protein;
+
+    @SerializedName("지방(g)")
+    private double fat;
+
+    public String getFoodCode() {
+        return foodCode;
     }
 
-    public String getFoodId() { return foodId; }
-    public void setFoodId(String foodId) { this.foodId = foodId; }
+    public String getFoodName() {
+        return foodName;
+    }
 
-    public String getMenuName() { return menuName; }
-    public void setMenuName(String menuName) { this.menuName = menuName; }
+    public double getKcal() {
+        return kcal;
+    }
 
-    public double getKcal() { return kcal; }
-    public void setKcal(double kcal) { this.kcal = kcal; }
+    public double getCarbohydrate() {
+        return carbohydrate;
+    }
 
-    public double getCarbohydrate() { return carbohydrate; }
-    public void setCarbohydrate(double carbohydrate) { this.carbohydrate = carbohydrate; }
+    public double getProtein() {
+        return protein;
+    }
 
-    public double getProtein() { return protein; }
-    public void setProtein(double protein) { this.protein = protein; }
+    public double getFat() {
+        return fat;
+    }
 
-    public double getFat() { return fat; }
-    public void setFat(double fat) { this.fat = fat; }
+    @Override
+    public String toString() {
+        return foodName + " (" + kcal + " kcal)";
+    }
 }
