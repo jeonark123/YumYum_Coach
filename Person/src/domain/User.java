@@ -1,5 +1,9 @@
 package domain;
 
+import java.util.ArrayList;
+import java.util.List;
+
+
 public class User {
     private String id;        
     private String password;
@@ -8,6 +12,7 @@ public class User {
     private double weight;    
     private String disease;   
     private boolean isActive; 
+    private List<String> followingList = new ArrayList<>();
     
    
     public User() {
@@ -82,6 +87,22 @@ public class User {
     public void setActive(boolean isActive) {
         this.isActive = isActive;
     }
+    
+    public List<String> getFollowingList(){
+    	return followingList;
+    }
+    
+    public boolean addFollowing(String targetId) {
+    	if(!followingList.contains(targetId)) {
+    		followingList.add(targetId);
+    		return true;
+    	}
+    	return false;
+    }
+    
+    public boolean removeFollowing(String targetId) {
+    	return followingList.remove(targetId);
+    }
 
     @Override
     public String toString() {
@@ -89,6 +110,7 @@ public class User {
                 + ", height=" + height + ", weight=" + weight 
                 + ", disease=" + disease + ", isActive=" + isActive + "]";
     }
+    
     
     
  // 객체 데이터를 파일에 한 줄로 저장하기 위해 쉼표(,) 구분 문자열로 변환
