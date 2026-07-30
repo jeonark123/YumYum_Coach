@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.lang.reflect.Type;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -18,6 +19,8 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
 import domain.Diet;
+import exception.DietDateNotFoundException;
+
 import java.util.Date;
 
 
@@ -62,18 +65,38 @@ public class DietManagerImpl implements DietManager {
 	}
 	
 	@Override
-	public Diet[] searchByDietDate(Date dietDate) {
+	public Diet[] searchByDietDate(Date dietDate) throws DietDateNotFoundException{
 		List<Diet> dietListByDate = new ArrayList<>();
-		
-		for(int i = 0; i < dietList.size();i++) {
-			if(dietList.get(i).getDietDate().equals(dietDate)) {
-				dietListByDate.add(dietList.get(i));
-			}
-		}
-		
-//		// 해당 날짜가 없는 경우에 예외를 던진다 !!!
-//		if(dietListByDate.size() == 0)
-//			throw new DietDateNotFoundException(dietDate);
+
+        
+//		for(int i = 0; i < dietList.size();i++) {
+//			if(dietList.get(i).getDietDate().equals(dietDate)) {
+//				dietListByDate.add(dietList.get(i));
+//			}
+//		}
+//		
+////		// 해당 날짜가 없는 경우에 예외를 던진다 !!!
+////		if(dietListByDate.size() == 0)
+////			throw new DietDateNotFoundException(dietDate);
+/// 
+/// // Date 객체를 'yyyy-MM-dd' 형태의 문자열로 변환하여 비교
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+        String targetDateStr = sdf.format(dietDate);
+
+        for (int i = 0; i < dietList.size(); i++) {
+            Diet diet = dietList.get(i);
+            if (diet.getDietDate() != null) {
+                String dietDateStr = sdf.format(diet.getDietDate());
+                if (dietDateStr.equals(targetDateStr)) {
+                    dietListByDate.add(diet);
+                }
+            }
+        }
+
+        // 해당 날짜의 식단이 없는 경우 예외를 던집니다.
+        if (dietListByDate.isEmpty()) {
+            throw new DietDateNotFoundException(targetDateStr);
+        }
 	
 		Diet[] res = new Diet[dietListByDate.size()];
 		
@@ -81,6 +104,8 @@ public class DietManagerImpl implements DietManager {
 	
 	
 	}
+	
+	
 	@Override
 	public void saveData() {
 		try (BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file)))) {
