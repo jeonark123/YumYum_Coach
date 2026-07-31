@@ -45,7 +45,31 @@ public class DietKcalInfo {
         return fat;
     }
 
-    @Override
+    public void setFoodCode(String foodCode) {
+		this.foodCode = foodCode;
+	}
+
+	public void setFoodName(String foodName) {
+		this.foodName = foodName;
+	}
+
+	public void setKcal(double kcal) {
+		this.kcal = kcal;
+	}
+
+	public void setCarbohydrate(double carbohydrate) {
+		this.carbohydrate = carbohydrate;
+	}
+
+	public void setProtein(double protein) {
+		this.protein = protein;
+	}
+
+	public void setFat(double fat) {
+		this.fat = fat;
+	}
+
+	@Override
     public String toString() {
         return foodName + " (" + kcal + " kcal)";
     }
