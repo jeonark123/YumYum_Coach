@@ -2,12 +2,15 @@ package manager;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 
 import domain.DietKcalInfo;
@@ -77,5 +80,29 @@ public class DietKcalManager {
 
 	    return totalKcal;
 	}
+	
+	/**
+     * DB에 없는 새로운 영양정보를 메모리 Map에 추가하고 JSON 파일에 영구 저장합니다.
+     */
+    public static void saveCustomNutrient(String foodName, double kcal, double carbo, double protein, double fat) {
+        DietKcalInfo newInfo = new DietKcalInfo();
+        newInfo.setFoodName(foodName.trim());
+        newInfo.setKcal(kcal);
+        newInfo.setCarbohydrate(carbo);
+        newInfo.setProtein(protein);
+        newInfo.setFat(fat);
+
+        // 1. 메모리 Map 업데이트
+        kcalMap.put(normalize(foodName), newInfo);
+
+        // 2. JSON 파일에 전체 목록 다시 쓰기
+        try (FileWriter writer = new FileWriter(JSON_FILE_PATH)) {
+            Gson gson = new GsonBuilder().setPrettyPrinting().create();
+            List<DietKcalInfo> currentList = new ArrayList<>(kcalMap.values());
+            gson.toJson(currentList, writer);
+        } catch (IOException e) {
+            System.out.println("[오류] 새로운 영양정보를 파일에 저장하는 중 오류 발생: " + e.getMessage());
+        }
+    }
 
 }

@@ -225,22 +225,25 @@ public class UserMenu {
         diet.setDietDate(new Date());
 
         System.out.print("아침 메뉴 (쉼표로 구분 예: 밥,계란후라이) : ");
-        String morningInput = sc.nextLine();
-        for (String m : morningInput.split(",")) {
-            if (!m.trim().isEmpty()) diet.getMorningMenus().add(m.trim());
-        }
+//        String morningInput = sc.nextLine();
+//        for (String m : morningInput.split(",")) {
+//            if (!m.trim().isEmpty()) diet.getMorningMenus().add(m.trim());
+//        }
+        processMealInput(sc.nextLine(), diet.getMorningMenus());
 
         System.out.print("점심 메뉴 (쉼표로 구분 예: 닭가슴살,샐러드) : ");
-        String lunchInput = sc.nextLine();
-        for (String m : lunchInput.split(",")) {
-            if (!m.trim().isEmpty()) diet.getLunchMenus().add(m.trim());
-        }
+//        String lunchInput = sc.nextLine();
+//        for (String m : lunchInput.split(",")) {
+//            if (!m.trim().isEmpty()) diet.getLunchMenus().add(m.trim());
+//        }
+        processMealInput(sc.nextLine(), diet.getLunchMenus());
 
         System.out.print("저녁 메뉴 (쉼표로 구분 예: 샐러드) : ");
-        String dinnerInput = sc.nextLine();
-        for (String m : dinnerInput.split(",")) {
-            if (!m.trim().isEmpty()) diet.getDinnerMenus().add(m.trim());
-        }
+//        String dinnerInput = sc.nextLine();
+//        for (String m : dinnerInput.split(",")) {
+//            if (!m.trim().isEmpty()) diet.getDinnerMenus().add(m.trim());
+//        }
+        processMealInput(sc.nextLine(), diet.getDinnerMenus());
 
         dietManager.addDiet(diet);
         dietManager.saveData();
@@ -616,6 +619,61 @@ public class UserMenu {
             System.out.println("[오류] 로그인 정보를 찾을 수 없습니다.");
         }
     }
+    
+    /**
+     * 입력된 메뉴 문자열을 쉼표 기준으로 파싱하고, DB에 없는 메뉴는 즉시 사용자에게 영양정보를 입력받아 등록합니다.
+     */
+    private void processMealInput(String input, List<String> targetList) {
+        if (input == null || input.trim().isEmpty()) return;
+
+        String[] rawMenus = input.split(",");
+        for (String raw : rawMenus) {
+            String menuName = raw.trim();
+            if (menuName.isEmpty()) continue;
+
+            // DB에서 존재 여부 검증
+            DietKcalInfo info = DietKcalManager.findByFoodName(menuName);
+
+            if (info != null) {
+                // DB에 존재하는 경우 그대로 추가
+                targetList.add(menuName);
+            } else {
+                // DB에 없는 메뉴 처리 흐름
+                while (true) {
+                    System.out.println("  [!] '" + menuName + "'은(는) DB에 영양정보가 없는 음식입니다.");
+                    System.out.print("      [1] 직접 영양정보 입력 후 저장  [2] 메뉴 등록 취소 >> ");
+                    String choice = sc.nextLine().trim();
+
+                    if ("1".equals(choice)) {
+                        try {
+                            System.out.print("      - 칼로리(kcal): ");
+                            double kcal = Double.parseDouble(sc.nextLine().trim());
+                            System.out.print("      - 탄수화물(g): ");
+                            double carbo = Double.parseDouble(sc.nextLine().trim());
+                            System.out.print("      - 단백질(g): ");
+                            double protein = Double.parseDouble(sc.nextLine().trim());
+                            System.out.print("      - 지방(g): ");
+                            double fat = Double.parseDouble(sc.nextLine().trim());
+
+                            // DietKcalManager를 통해 메모리 및 json 파일에 저장
+                            DietKcalManager.saveCustomNutrient(menuName, kcal, carbo, protein, fat);
+                            targetList.add(menuName);
+                            System.out.println("  [성공] '" + menuName + "'의 영양정보가 DB에 새로 추가되었습니다!");
+                            break;
+                        } catch (NumberFormatException e) {
+                            System.out.println("  [오류] 숫자만 입력할 수 있습니다. 다시 입력해주세요.");
+                        }
+                    } else if ("2".equals(choice)) {
+                        System.out.println("  [안내] '" + menuName + "' 메뉴 등록을 스킵합니다.");
+                        break;
+                    } else {
+                        System.out.println("  [오류] 1번 또는 2번을 선택해주세요.");
+                    }
+                }
+            }
+        }
+    }
+    
     
     /**
      * 메뉴 이름 목록을 받아서 "음식명(칼로리: ~kcal, 탄수화물: ~g, 단백질: ~g, 지방: ~g)" 형태로 포맷팅합니다.
