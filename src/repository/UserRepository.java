@@ -14,7 +14,7 @@ public class UserRepository {
     // 메모리 상에서 회원 데이터를 관리할 리스트
     private List<User> userList = new ArrayList<>();
     // 저장할 파일 경로 및 파일명 지정
-    private final String FILE_PATH = "users.txt";
+    private final String FILE_PATH = "data/users.txt";
     
     // 생성자 (프로그램 시작 시 자동으로 파일에서 데이터 불러오기)
     public UserRepository() {

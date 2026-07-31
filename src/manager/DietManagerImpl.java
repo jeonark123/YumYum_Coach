@@ -35,7 +35,7 @@ public class DietManagerImpl implements DietManager {
 	
 	// 저장할 파일 경로 및 파일명 지정
 //	private final String DIET_FILE_PATH = "diets.txt";
-	private File file = new File("diets.json");
+	private File file = new File("data/diets.json");
 //	private Gson gson = new Gson();
 	private Gson gson = new GsonBuilder()
 		    .setDateFormat("yyyy-MM-dd") // 날짜를 연-월-일 형식으로만 다루도록 지정

@@ -17,7 +17,7 @@ import domain.DietKcalInfo;
 
 public class DietKcalManager {
 	private static Map<String, DietKcalInfo> kcalMap = new HashMap<>();
-	private static final String JSON_FILE_PATH = "food_kcal.json";
+	private static final String JSON_FILE_PATH = "data/food_kcal.json";
 	
 	static {
 		kcalLoadData();
