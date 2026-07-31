@@ -34,7 +34,7 @@ public class UserMenu {
                 // 로그인 전 메뉴
                 System.out.println("1. 로그인");
                 System.out.println("2. 회원가입");
-                System.out.println("0. 뒤로가기(메인으로)");
+                System.out.println("0. 종료");
                 System.out.print("메뉴 선택 >> ");
                 
                 String choice = sc.nextLine();
@@ -46,20 +46,24 @@ public class UserMenu {
                         handleRegister();
                         break;
                     case "0":
-                        System.out.println("[안내] 메인 메뉴로 돌아갑니다.");
-                        return; // 메서드를 종료하여 상위 메뉴로 이동
+                        System.out.println("[안내] 프로그램을 종료합니다.");
+                        
+                        sc.close();
+                        
+                        System.exit(0);
+                        
                     default:
                         System.out.println("[오류] 잘못된 입력입니다. 다시 선택해주세요.");
                 }
             } else {
                 // 로그인 후 메뉴
                 System.out.println("1. 내 정보 조회");
-                System.out.println("2. 내 정보 수정");
+                System.out.println("2. 내 정보 수정"); 
                 System.out.println("3. 회원 탈퇴 (비활성화)");
                 System.out.println("4. 로그아웃");
                 System.out.println("5. 식단 관리");
                 System.out.println("6. 다른 회원 팔로우");
-                System.out.println("0. 뒤로가기(메인으로)");
+                System.out.println("0. 종료");
                 System.out.print("메뉴 선택 >> ");
                 
                 String choice = sc.nextLine();
@@ -83,8 +87,12 @@ public class UserMenu {
                         handleFollow();
                         break;
                     case "0":
-                        System.out.println("[안내] 메인 메뉴로 돌아갑니다.");
-                        return;
+                        System.out.println("[안내] 프로그램을 종료합니다.");
+                        
+                        sc.close();
+                        
+                        System.exit(0);
+                        
                     default:
                         System.out.println("[오류] 잘못된 입력입니다. 다시 선택해주세요.");
                 }
