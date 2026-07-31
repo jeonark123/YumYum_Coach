@@ -549,22 +549,25 @@ public class UserMenu {
                 System.out.println("\n식단 메뉴를 입력해주세요. (최소 하나의 끼니에는 메뉴를 입력해야 합니다)");
 
                 System.out.print("아침 메뉴 (쉼표로 구분 예: 밥,계란후라이) : ");
-                String morningInput = sc.nextLine();
-                for (String m : morningInput.split(",")) {
-                    if (!m.trim().isEmpty()) dietData.getMorningMenus().add(m.trim());
-                }
+//                String morningInput = sc.nextLine();
+//                for (String m : morningInput.split(",")) {
+//                    if (!m.trim().isEmpty()) dietData.getMorningMenus().add(m.trim());
+//                }
+                processMealInput(sc.nextLine(), dietData.getMorningMenus());
 
                 System.out.print("점심 메뉴 (쉼표로 구분 예: 닭가슴살,샐러드) : ");
-                String lunchInput = sc.nextLine();
-                for (String m : lunchInput.split(",")) {
-                    if (!m.trim().isEmpty()) dietData.getLunchMenus().add(m.trim());
-                }
+//                String lunchInput = sc.nextLine();
+//                for (String m : lunchInput.split(",")) {
+//                    if (!m.trim().isEmpty()) dietData.getLunchMenus().add(m.trim());
+//                }
+                processMealInput(sc.nextLine(), dietData.getLunchMenus());
 
                 System.out.print("저녁 메뉴 (쉼표로 구분 예: 샐러드) : ");
-                String dinnerInput = sc.nextLine();
-                for (String m : dinnerInput.split(",")) {
-                    if (!m.trim().isEmpty()) dietData.getDinnerMenus().add(m.trim());
-                }
+//                String dinnerInput = sc.nextLine();
+//                for (String m : dinnerInput.split(",")) {
+//                    if (!m.trim().isEmpty()) dietData.getDinnerMenus().add(m.trim());
+//                }
+                processMealInput(sc.nextLine(), dietData.getDinnerMenus());
 
                 // 입력된 메뉴가 하나라도 있는지 검증
                 boolean isMorningEmpty = dietData.getMorningMenus().isEmpty();

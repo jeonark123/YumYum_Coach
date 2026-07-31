@@ -86,6 +86,8 @@ public class DietKcalManager {
      */
     public static void saveCustomNutrient(String foodName, double kcal, double carbo, double protein, double fat) {
         DietKcalInfo newInfo = new DietKcalInfo();
+        String generatedCode = "CUSTOM_" + System.currentTimeMillis();
+        newInfo.setFoodCode(generatedCode);
         newInfo.setFoodName(foodName.trim());
         newInfo.setKcal(kcal);
         newInfo.setCarbohydrate(carbo);
